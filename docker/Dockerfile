@@ -72,6 +72,8 @@ ENV PYTHONUNBUFFERED TRUE
 
 RUN --mount=type=cache,target=/var/cache/apt \
     apt-get update && \
+    # Install fixes for pix2pix dependencies 
+    apt-get install -y ffmpeg libsm6 libxext6 && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     python3 \
     python3-distutils \
@@ -93,13 +95,15 @@ COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
 RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh \
     && chown -R model-server /home/model-server
 
-COPY config.properties /home/model-server/config.properties
-RUN mkdir /home/model-server/model-store && chown -R model-server /home/model-server/model-store
+# COPY config.properties /home/model-server/config.properties
+# RUN mkdir /home/model-server/model-store && chown -R model-server /home/model-server/model-store
+
+# Install fixes for pix2pix dependencies 
+RUN pip install --upgrade pip
 
 EXPOSE 8080 8081 8082 7070 7071
 
 USER model-server
 WORKDIR /home/model-server
-ENV TEMP=/home/model-server/tmp
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 CMD ["serve"]

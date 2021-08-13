@@ -29,3 +29,9 @@ test/config.properties
 # Custom benchmark artifacts
 instances.yaml
 instances.yaml.backup
+
+# For custom handlers
+logs
+mount
+*.pth
+*.mar

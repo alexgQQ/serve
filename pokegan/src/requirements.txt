@@ -1,0 +1,3 @@
+google-cloud-storage
+moviepy
+opencv-python

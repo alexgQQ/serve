@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "pix2pix"
+version = "0.1.0"
+description = ""
+authors = ["alexgQQ <alex.grand@beatport.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+torch = "^1.9.0"
+torchvision = "^0.10.0"
+Pillow = "^8.3.1"
+opencv-python = "^4.5.3"
+numpy = "^1.21.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
