@@ -2,6 +2,9 @@ import io
 import os
 import tempfile
 import logging
+from glob import glob
+from random import choice
+from os.path import join
 
 from uuid import uuid4
 
@@ -9,7 +12,13 @@ import torch
 import torchvision.transforms as transforms
 import numpy as np
 import cv2
-import moviepy.editor as mp
+from moviepy.editor import (
+    AudioFileClip,
+    CompositeAudioClip,
+    CompositeVideoClip,
+    ImageClip,
+    VideoFileClip,
+)
 
 from google.cloud import storage
 from PIL import Image
@@ -59,10 +68,10 @@ def edit_video(video_template, outline_image, generated_image, audio_template):
     images should be 4 channel numpy arrays, video template should be the file location
     for the base pokemon tempalte, returns a object for video saving
     """
-    video = mp.VideoFileClip(video_template).set_duration(17)
+    video = VideoFileClip(video_template).set_duration(17)
 
     sillouete_image = (
-        mp.ImageClip(outline_image)
+        ImageClip(outline_image)
         .set_duration(9)
         .set_start(1)
         .resize(height=256)
@@ -70,17 +79,17 @@ def edit_video(video_template, outline_image, generated_image, audio_template):
     )
 
     full_image = (
-        mp.ImageClip(generated_image)
+        ImageClip(generated_image)
         .set_duration(7)
         .set_start(10)
         .resize(height=256)
         .set_position((120, 80))
     )
 
-    final_video = mp.CompositeVideoClip([video, sillouete_image, full_image])
+    final_video = CompositeVideoClip([video, sillouete_image, full_image])
     original_audio = final_video.audio
-    added_audio = mp.AudioFileClip(audio_template)
-    new_audio = mp.CompositeAudioClip([original_audio, added_audio.set_start(10)])
+    added_audio = AudioFileClip(audio_template)
+    new_audio = CompositeAudioClip([original_audio, added_audio.set_start(10)])
     final_video = final_video.set_audio(new_audio)
     return final_video
 
@@ -243,8 +252,10 @@ class Pix2PixHandler(BaseHandler):
             result_image.paste(self.outline_image, (0, 0), mask=self.outline_image)
             result_image = np.array(result_image)
 
+            audio_files = glob(join(AUDIO_LOCATION, "*"))
+            audio_file = choice(audio_files)
             final = edit_video(
-                VIDEO_TEMPLATE_LOCATION, outline, result_image, AUDIO_LOCATION
+                VIDEO_TEMPLATE_LOCATION, outline, result_image, audio_file
             )
 
             with tempfile.TemporaryDirectory() as tmpdirname:
