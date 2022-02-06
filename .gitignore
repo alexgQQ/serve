@@ -35,4 +35,6 @@ logs
 mount
 *.pth
 *.mar
+*.mp3
+*.mp4
 service-account.json
