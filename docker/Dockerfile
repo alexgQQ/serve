@@ -32,9 +32,11 @@ RUN --mount=type=cache,id=apt-dev,target=/var/cache/apt \
     python3-venv \
     openjdk-11-jre-headless \
     curl \
+    libjpeg-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
     && cd /tmp \
-    && curl -O https://bootstrap.pypa.io/get-pip.py \
+    && curl -O https://bootstrap.pypa.io/pip/3.6/get-pip.py \
     && python3 get-pip.py
 
 RUN python3 -m venv /home/venv
@@ -49,20 +51,21 @@ RUN export USE_CUDA=1
 
 ARG CUDA_VERSION=""
 
-RUN TORCH_VER=$(curl --silent --location https://pypi.org/pypi/torch/json | python -c "import sys, json, pkg_resources; releases = json.load(sys.stdin)['releases']; print(sorted(releases, key=pkg_resources.parse_version)[-1])") && \
-    TORCH_VISION_VER=$(curl --silent --location https://pypi.org/pypi/torchvision/json | python -c "import sys, json, pkg_resources; releases = json.load(sys.stdin)['releases']; print(sorted(releases, key=pkg_resources.parse_version)[-1])") && \
-    if echo "$BASE_IMAGE" | grep -q "cuda:"; then \
-        # Install CUDA version specific binary when CUDA version is specified as a build arg
-        if [ "$CUDA_VERSION" ]; then \
-            pip install --no-cache-dir torch==$TORCH_VER+$CUDA_VERSION torchvision==$TORCH_VISION_VER+$CUDA_VERSION -f https://download.pytorch.org/whl/torch_stable.html; \
-        # Install the binary with the latest CUDA version support
-        else \
-            pip install --no-cache-dir torch torchvision; \
-        fi \
-    # Install the CPU binary
-    else \
-        pip install --no-cache-dir torch==$TORCH_VER+cpu torchvision==$TORCH_VISION_VER+cpu -f https://download.pytorch.org/whl/torch_stable.html; \
-    fi
+# RUN TORCH_VER=$(curl --silent --location https://pypi.org/pypi/torch/json | python -c "import sys, json, pkg_resources; releases = json.load(sys.stdin)['releases']; print(sorted(releases, key=pkg_resources.parse_version)[-1])") && \
+#     TORCH_VISION_VER=$(curl --silent --location https://pypi.org/pypi/torchvision/json | python -c "import sys, json, pkg_resources; releases = json.load(sys.stdin)['releases']; print(sorted(releases, key=pkg_resources.parse_version)[-1])") && \
+RUN pip install --no-cache-dir torch==1.10.2+cpu torchvision==0.11.3+cpu -f https://download.pytorch.org/whl/torch_stable.html;
+    # if echo "$BASE_IMAGE" | grep -q "cuda:"; then \
+    #     # Install CUDA version specific binary when CUDA version is specified as a build arg
+    #     if [ "$CUDA_VERSION" ]; then \
+    #         pip install --no-cache-dir torch==$TORCH_VER+$CUDA_VERSION torchvision==$TORCH_VISION_VER+$CUDA_VERSION -f https://download.pytorch.org/whl/torch_stable.html; \
+    #     # Install the binary with the latest CUDA version support
+    #     else \
+    #         pip install --no-cache-dir torch torchvision; \
+    #     fi \
+    # # Install the CPU binary
+    # else \
+    #     pip install --no-cache-dir torch==$TORCH_VER+cpu torchvision==$TORCH_VISION_VER+cpu -f https://download.pytorch.org/whl/torch_stable.html; \
+    # fi
 RUN pip install --no-cache-dir captum torchtext torchserve torch-model-archiver
 
 # Final image for production
